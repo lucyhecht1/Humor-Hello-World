@@ -55,7 +55,7 @@ export default async function ListPage() {
           {dorms.map((dorm: DormRow) => (
             <article
               key={dorm.id}
-              className="flex aspect-square flex-col justify-between rounded-2xl border bg-white p-5 shadow-sm transition hover:shadow-md"
+              className="flex flex-col justify-between rounded-2xl border bg-white p-5 shadow-sm transition hover:shadow-md"
             >
               {/* Top content */}
               <div>
@@ -69,7 +69,7 @@ export default async function ListPage() {
               </div>
 
               {/* Bottom metadata */}
-              <div className="mt-4 flex flex-wrap gap-2 text-xs text-gray-600">
+              <div className="mt-3 flex flex-wrap gap-2 text-xs text-gray-600">
                 <span className="rounded-full bg-gray-100 px-2 py-1">
                   ID: {dorm.id}
                 </span>
