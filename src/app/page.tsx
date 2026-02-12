@@ -1,8 +1,12 @@
-import Link from "next/link";
+import BrowseDormsButton from "@/components/BrowseDormsButton";
+import SignOutButton from "@/components/SignOutButton";
 
 export default function Home() {
   return (
     <main className="min-h-screen bg-gray-50 p-6">
+      <div className="flex justify-end">
+        <SignOutButton />
+      </div>
       <div className="mx-auto mt-12 w-full max-w-xl rounded-2xl border bg-white p-8 shadow-sm">
         <h1 className="text-3xl font-semibold tracking-tight text-gray-900">
           Columbia Dorms
@@ -13,12 +17,7 @@ export default function Home() {
         </p>
 
         <div className="mt-6 flex items-center gap-3">
-          <Link
-            href="/list"
-            className="inline-flex items-center rounded-xl bg-black px-4 py-2 text-sm font-medium text-white transition hover:bg-gray-800"
-          >
-            Browse dorms
-          </Link>
+          <BrowseDormsButton />
 
           <span className="text-xs text-gray-400">
             pulled live from Supabase

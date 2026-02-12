@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
+import AuthGate from "@/components/AuthGate";
 
 export const dynamic = "force-dynamic";
 
@@ -31,57 +32,59 @@ export default async function ListPage() {
   const dorms = data ?? [];
 
   return (
-    <main className="p-6">
-      <div className="mx-auto max-w-6xl">
-        {/* Header */}
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-semibold">Dorms</h1>
-            <p className="mt-1 text-sm text-gray-600">
-              {dorms.length} dorms pulled live from Supabase
-            </p>
+    <AuthGate>
+      <main className="p-6">
+        <div className="mx-auto max-w-6xl">
+          {/* Header */}
+          <div className="mb-6 flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-semibold">Dorms</h1>
+              <p className="mt-1 text-sm text-gray-600">
+                {dorms.length} dorms pulled live from Supabase
+              </p>
+            </div>
+
+            <Link
+              href="/"
+              className="rounded-xl border px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100"
+            >
+              ← Back to home
+            </Link>
           </div>
 
-          <Link
-            href="/"
-            className="rounded-xl border px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100"
-          >
-            ← Back to home
-          </Link>
+          {/* GRID */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {dorms.map((dorm: DormRow) => (
+              <article
+                key={dorm.id}
+                className="flex flex-col justify-between rounded-2xl border bg-white p-5 shadow-sm transition hover:shadow-md"
+              >
+                {/* Top content */}
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-900">
+                    {dorm.short_name}
+                  </h2>
+
+                  <p className="mt-1 text-sm text-gray-600">
+                    {dorm.full_name}
+                  </p>
+                </div>
+
+                {/* Bottom metadata */}
+                <div className="mt-3 flex flex-wrap gap-2 text-xs text-gray-600">
+                  <span className="rounded-full bg-gray-100 px-2 py-1">
+                    ID: {dorm.id}
+                  </span>
+
+                  <span className="rounded-full bg-gray-100 px-2 py-1">
+                    University ID: {dorm.university_id}
+                  </span>
+                </div>
+              </article>
+            ))}
+          </div>
         </div>
-
-        {/* GRID */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {dorms.map((dorm: DormRow) => (
-            <article
-              key={dorm.id}
-              className="flex flex-col justify-between rounded-2xl border bg-white p-5 shadow-sm transition hover:shadow-md"
-            >
-              {/* Top content */}
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900">
-                  {dorm.short_name}
-                </h2>
-
-                <p className="mt-1 text-sm text-gray-600">
-                  {dorm.full_name}
-                </p>
-              </div>
-
-              {/* Bottom metadata */}
-              <div className="mt-3 flex flex-wrap gap-2 text-xs text-gray-600">
-                <span className="rounded-full bg-gray-100 px-2 py-1">
-                  ID: {dorm.id}
-                </span>
-
-                <span className="rounded-full bg-gray-100 px-2 py-1">
-                  University ID: {dorm.university_id}
-                </span>
-              </div>
-            </article>
-          ))}
-        </div>
-      </div>
-    </main>
+      </main>
+    </AuthGate>
   );
 }
