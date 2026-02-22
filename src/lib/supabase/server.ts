@@ -11,14 +11,16 @@ export async function createSupabaseServerClient() {
     {
       cookies: {
         getAll() {
-          // Next cookie store uses getAll() in some versions, but in others it’s different.
+          // Next cookie store uses getAll() in some versions, but in others it's different.
           // This is the most compatible approach:
           return cookieStore.getAll();
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            cookieStore.set(name, value, options);
-          });
+          // In server components, we can't modify cookies.
+          // This is read-only for server components - cookies are only set in Route Handlers/Server Actions.
+          // For server components that only read data, we skip setting cookies.
+          // Cookies will be properly managed in Route Handlers (like /auth/callback)
+          // This is a no-op for server components to avoid the Next.js cookie modification error.
         },
       },
     }
