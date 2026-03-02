@@ -24,6 +24,7 @@ export default async function CaptionsPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  console.log("AUTH USER ID:", user.id);
   if (!user) redirect("/login");
 
   const { data: captionsData, error: captionsError } = await supabase
@@ -101,6 +102,7 @@ export default async function CaptionsPage() {
     .select("caption_id, vote_value")
     .in("caption_id", captionIds);
 
+  // Check caption_votes table for votes by the authenticated user
   const { data: userVotesData } = await supabase
     .from("caption_votes")
     .select("caption_id, vote_value, created_datetime_utc")
@@ -131,6 +133,9 @@ export default async function CaptionsPage() {
   const visibleCaptions = captionsWithVotes.filter(
     (c) => c.image_id && imagesMap.has(c.image_id)
   );
+
+  // Already-voted comes solely from DB (caption_votes for this user). Only show unvoted captions.
+  const captionsToVoteOn = visibleCaptions.filter((c) => c.user_vote == null);
 
   // List of 20 funny usernames
   const funnyUsernames = [
@@ -206,8 +211,8 @@ export default async function CaptionsPage() {
     return gradients[index];
   }
 
-  // Randomize the order of captions
-  const orderedCaptions = visibleCaptions;
+  // Use unvoted captions so user continues where they left off after refresh/login
+  const orderedCaptions = captionsToVoteOn;
 
   const carouselPosts: CarouselPost[] = orderedCaptions.map((caption) => {
     const username = getUsernameForCaption(caption.id);
@@ -246,6 +251,21 @@ export default async function CaptionsPage() {
               </p>
               <p className="mt-1 text-sm text-neutral-600">
                 When people post captions, they’ll show up here.
+              </p>
+              <Link
+                href="/"
+                className="mt-5 inline-flex items-center justify-center rounded-full bg-neutral-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90"
+              >
+                Go back
+              </Link>
+            </div>
+          ) : captionsToVoteOn.length === 0 ? (
+            <div className="rounded-2xl border border-neutral-200 bg-white p-8 text-center shadow-sm">
+              <p className="text-sm font-medium text-neutral-900">
+                Your votes are in!
+              </p>
+              <p className="mt-1 text-sm text-neutral-600">
+                You've voted on all available captions. Check back later for more.
               </p>
               <Link
                 href="/"

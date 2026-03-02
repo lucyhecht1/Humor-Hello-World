@@ -64,7 +64,8 @@ export default function AuthButton() {
   async function handleSignOut() {
     await supabase.auth.signOut();
     setShowConfirm(false);
-    // Redirect to login page after signing out
+    // Refresh so layout and server components see the updated (signed-out) session
+    router.refresh();
     router.push("/login");
   }
 
@@ -80,8 +81,16 @@ export default function AuthButton() {
     });
   }
 
+  // While loading, show Sign in so the button never disappears (e.g. after sign out + refresh)
   if (loading) {
-    return null;
+    return (
+      <button
+        disabled
+        className="inline-flex h-10 cursor-not-allowed items-center justify-center px-4 text-sm font-semibold text-neutral-400"
+      >
+        Sign in
+      </button>
+    );
   }
 
   if (signedIn) {

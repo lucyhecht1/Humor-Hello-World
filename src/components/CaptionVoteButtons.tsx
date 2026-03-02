@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { submitCaptionVote } from "@/app/captions/actions";
 
 type CaptionVoteButtonsProps = {
     captionId: string;
@@ -19,7 +20,6 @@ export default function CaptionVoteButtons({
     onVote,
     disabled = false,
 }: CaptionVoteButtonsProps) {
-    const supabase = useMemo(() => createSupabaseBrowserClient(), []);
     const router = useRouter();
 
     const [vote, setVote] = useState<number | null>(currentVote);
@@ -31,12 +31,12 @@ export default function CaptionVoteButtons({
     useEffect(() => setCount(voteCount), [captionId, voteCount]);
 
     async function handleVote(voteType: 1 | -1) {
+        const supabase = createSupabaseBrowserClient();
         const {
             data: { session },
         } = await supabase.auth.getSession();
 
         if (!session) {
-            // Enforce: only logged-in users can vote
             alert("Please sign in to vote on captions.");
             return;
         }
@@ -44,26 +44,10 @@ export default function CaptionVoteButtons({
         setLoading(true);
 
         try {
-            // ASSIGNMENT REQUIREMENT:
-            // Every vote is a NEW ROW (no update/delete).
-            const now = new Date().toISOString();
+            const result = await submitCaptionVote(captionId, voteType);
 
-            const { error } = await supabase
-                .from("caption_votes")
-                .upsert(
-                    {
-                        caption_id: captionId,
-                        profile_id: session.user.id,
-                        vote_value: voteType,
-                        created_datetime_utc: now,   // keep if required NOT NULL
-                        modified_datetime_utc: now,  // keep if required NOT NULL
-                    },
-                    { onConflict: "caption_id,profile_id" }
-                );
-
-            if (error) {
-                console.error("Vote upsert error:", error);
-                alert(`Couldn't save your vote: ${error.message}`);
+            if (result.error) {
+                alert(result.error);
                 return;
             }
 

@@ -27,29 +27,29 @@ CREATE TABLE IF NOT EXISTS captions (
 -- Each row represents one user's vote on one caption.
 CREATE TABLE IF NOT EXISTS caption_votes (
   id BIGSERIAL PRIMARY KEY,
-  caption_id BIGINT NOT NULL REFERENCES captions(id) ON DELETE CASCADE,
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  vote_type INTEGER NOT NULL CHECK (vote_type IN (1, -1)), -- 1 = upvote, -1 = downvote
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  caption_id UUID NOT NULL REFERENCES captions(id) ON DELETE CASCADE,
+  profile_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  vote_value SMALLINT NOT NULL CHECK (vote_value IN (1, -1)), -- 1 = upvote, -1 = downvote
+  created_datetime_utc TIMESTAMPTZ DEFAULT NOW(),
+  modified_datetime_utc TIMESTAMPTZ DEFAULT NOW(),
   
   -- Ensure a user can only have one vote per caption
-  UNIQUE(caption_id, user_id)
+  UNIQUE(caption_id, profile_id)
 );
 
 -- ============================================
 -- INDEXES (for better query performance)
 -- ============================================
 CREATE INDEX IF NOT EXISTS idx_caption_votes_caption_id ON caption_votes(caption_id);
-CREATE INDEX IF NOT EXISTS idx_caption_votes_user_id ON caption_votes(user_id);
+CREATE INDEX IF NOT EXISTS idx_caption_votes_profile_id ON caption_votes(profile_id);
 
 -- ============================================
 -- NOTES:
 -- ============================================
 -- 1. The caption_votes table uses:
 --    - caption_id: Links to which caption is being voted on
---    - user_id: Links to the authenticated user (from auth.users)
---    - vote_type: 1 for upvote, -1 for downvote
+--    - profile_id: Links to the authenticated user (from auth.users)
+--    - vote_value: 1 for upvote, -1 for downvote
 --    - UNIQUE constraint: Prevents duplicate votes (one user, one vote per caption)
 --
 -- 2. The auth.users table is automatically created by Supabase
