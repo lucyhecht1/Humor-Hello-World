@@ -1,3 +1,4 @@
+import Link from "next/link";
 import BrowseDormsButton from "@/components/BrowseDormsButton";
 import Navbar from "@/components/Navbar";
 import SignInButton from "@/components/SignInButton";
@@ -22,7 +23,7 @@ export default function Home() {
           </h1>
 
           <p className="mt-3 max-w-2xl text-neutral-600">
-            Browse Columbia dorms. Rate funny captions. Just have fun!
+            What do Columbia dorms, AI, and humor have in common? They're all in this website!
           </p>
         </div>
 
@@ -68,6 +69,30 @@ export default function Home() {
                 <VoteButton />
 
                 <SignInButton />
+              </div>
+            </div>
+          </div>
+
+          {/* Upload */}
+          <div className="group flex min-h-[200px] flex-col rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm transition hover:shadow-md">
+            <div>
+              <h2 className="text-lg font-semibold text-neutral-900">
+                Upload images
+              </h2>
+              <p className="mt-1 text-sm text-neutral-600">
+                Add an image and get AI-generated captions.
+              </p>
+            </div>
+
+            <div className="mt-auto">
+              <div className="grid grid-cols-2 gap-3">
+                <Link
+                  href="/upload"
+                  className="flex h-10 w-full cursor-pointer items-center justify-center rounded-2xl bg-indigo-600 px-4 text-sm font-semibold text-white transition hover:bg-indigo-700"
+                >
+                  Upload images
+                </Link>
+                <SignInButton redirectAfterSignIn="/upload" />
               </div>
             </div>
           </div>

@@ -24,6 +24,12 @@ export default function Navbar() {
           >
             Captions
           </Link>
+          <Link
+            href="/upload"
+            className="text-sm font-semibold text-neutral-900 transition hover:text-indigo-600"
+          >
+            Upload
+          </Link>
         </div>
         <AuthButton />
       </div>

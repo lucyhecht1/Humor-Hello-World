@@ -3,14 +3,21 @@
 import { useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
-export default function SignInButton() {
+type SignInButtonProps = {
+  /** Path to redirect to after sign-in (e.g. "/upload"). Defaults to /captions. */
+  redirectAfterSignIn?: string;
+};
+
+export default function SignInButton({ redirectAfterSignIn }: SignInButtonProps = {}) {
   const supabase = createSupabaseBrowserClient();
   const [loading, setLoading] = useState(false);
 
   async function handleSignIn() {
     setLoading(true);
     const origin = window.location.origin;
-    
+    if (redirectAfterSignIn) {
+      document.cookie = `auth_redirect=${encodeURIComponent(redirectAfterSignIn)};path=/;max-age=300;samesite=lax`;
+    }
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {

@@ -28,13 +28,9 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
       provider: "google",
       options: {
         // IMPORTANT: exactly /auth/callback, no extra query params
-        redirectTo: `${origin}/auth/callback`,
+        redirectTo: `${window.location.origin}/auth/callback`,
       },
     });
-  }
-
-  async function signOut() {
-    await supabase.auth.signOut();
   }
 
   if (loading) {
@@ -95,14 +91,5 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
     );
   }
 
-  return (
-    <div className="p-6">
-      <div className="mb-4 flex justify-end">
-        <button onClick={signOut} className="rounded-md border px-3 py-1 text-sm">
-          Sign out
-        </button>
-      </div>
-      {children}
-    </div>
-  );
+  return <>{children}</>;
 }

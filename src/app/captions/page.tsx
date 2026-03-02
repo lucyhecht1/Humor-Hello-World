@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import CaptionCarousel, { type CarouselPost } from "@/components/CaptionCarousel";
 import Navbar from "@/components/Navbar";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import CaptionVoteButtons from "@/components/CaptionVoteButtons";
 
 export const dynamic = "force-dynamic";
 
@@ -32,15 +32,14 @@ export default async function CaptionsPage() {
     .eq("is_public", true)
     .not("content", "is", null)
     .neq("content", "")
-    .order("created_datetime_utc", { ascending: false })
-    .limit(50);
+    .order("created_datetime_utc", { ascending: false });
 
   if (captionsError) {
     return (
       <>
         <Navbar />
         <main className="min-h-screen bg-gradient-to-b from-indigo-50 via-white to-rose-50 px-6 pt-24 pb-10">
-          <div className="mx-auto w-full max-w-md">
+          <div className="mx-auto w-full max-w-xl">
             <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm">
               <h1 className="text-lg font-semibold tracking-tight text-neutral-900">
                 Captions
@@ -104,9 +103,10 @@ export default async function CaptionsPage() {
 
   const { data: userVotesData } = await supabase
     .from("caption_votes")
-    .select("caption_id, vote_value")
+    .select("caption_id, vote_value, created_datetime_utc")
     .in("caption_id", captionIds)
-    .eq("profile_id", user.id);
+    .eq("profile_id", user.id)
+    .order("created_datetime_utc", { ascending: false });
 
   const voteCounts = new Map<string, number>();
   const userVoteMap = new Map<string, number>();
@@ -117,7 +117,9 @@ export default async function CaptionsPage() {
   });
 
   (userVotesData ?? []).forEach((v) => {
-    userVoteMap.set(v.caption_id, v.vote_value);
+    if (!userVoteMap.has(v.caption_id)) {
+      userVoteMap.set(v.caption_id, v.vote_value);
+    }
   });
 
   const captionsWithVotes: CaptionWithVotes[] = captions.map((c) => ({
@@ -205,16 +207,28 @@ export default async function CaptionsPage() {
   }
 
   // Randomize the order of captions
-  const shuffledCaptions = [...visibleCaptions].sort(() => Math.random() - 0.5);
+  const orderedCaptions = visibleCaptions;
 
-  // Toggle: set to true if you want "one post per screen" snapping.
-  const SNAP_FEED = false;
+  const carouselPosts: CarouselPost[] = orderedCaptions.map((caption) => {
+    const username = getUsernameForCaption(caption.id);
+    return {
+      id: caption.id,
+      content: caption.content,
+      created_datetime_utc: caption.created_datetime_utc,
+      image_id: caption.image_id,
+      vote_count: caption.vote_count,
+      user_vote: caption.user_vote,
+      imageUrl: caption.image_id ? imagesMap.get(caption.image_id) ?? null : null,
+      username,
+      gradient: getGradientForUsername(username),
+    };
+  });
 
   return (
     <>
       <Navbar />
       <main className="min-h-screen bg-gradient-to-b from-indigo-50 via-white to-rose-50 px-6 pt-24 pb-10">
-        <div className="mx-auto w-full max-w-md">
+        <div className="mx-auto w-full max-w-xl">
           {/* Header */}
           <div className="mb-6">
             <h1 className="text-4xl font-semibold tracking-tight text-neutral-900">
@@ -225,115 +239,24 @@ export default async function CaptionsPage() {
             </p>
           </div>
 
-          {/* Feed */}
-          <div
-            className={[
-              "pb-10",
-              SNAP_FEED ? "h-[calc(100vh-57px)] overflow-y-auto scroll-smooth" : "",
-              SNAP_FEED ? "snap-y snap-mandatory" : "",
-            ].join(" ")}
-          >
-            {visibleCaptions.length === 0 ? (
-              <div className="px-4">
-                <div className="mt-10 rounded-2xl border border-neutral-200 bg-white p-8 text-center shadow-sm">
-                  <p className="text-sm font-medium text-neutral-900">
-                    No captions found
-                  </p>
-                  <p className="mt-1 text-sm text-neutral-600">
-                    When people post captions, they’ll show up here.
-                  </p>
-                  <Link
-                    href="/"
-                    className="mt-5 inline-flex items-center justify-center rounded-full bg-neutral-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90"
-                  >
-                    Go back
-                  </Link>
-                </div>
-              </div>
-            ) : (
-              shuffledCaptions.map((caption) => {
-                const imageUrl = caption.image_id
-                  ? imagesMap.get(caption.image_id)
-                  : null;
-                const username = getUsernameForCaption(caption.id);
-
-                return (
-                  <article
-                    key={caption.id}
-                    className={[
-                      "mb-6 overflow-hidden rounded-2xl border border-neutral-200/70 bg-white shadow-sm",
-                      SNAP_FEED ? "snap-start" : "",
-                    ].join(" ")}
-                  >
-                    {/* Post "header" row */}
-                    <div className="flex items-center justify-between px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`h-8 w-8 rounded-full bg-gradient-to-br ${getGradientForUsername(username)}`}
-                        />
-                        <div className="leading-tight">
-                          <div className="text-sm font-semibold text-neutral-900">
-                            {username}
-                          </div>
-                          <div className="text-xs text-neutral-500">
-                            {new Date(
-                              caption.created_datetime_utc
-                            ).toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            })}
-                          </div>
-                        </div>
-                      </div>
-
-                      <button
-                        className="rounded-full px-2 py-1 text-xl leading-none text-neutral-400 hover:bg-neutral-50 hover:text-neutral-600"
-                        aria-label="More"
-                        type="button"
-                      >
-                        …
-                      </button>
-                    </div>
-
-                    {/* Media */}
-                    {imageUrl && (
-                      <div className="w-full bg-neutral-100">
-                        {/* square + full-bleed like IG */}
-                        <div className="aspect-square w-full overflow-hidden">
-                          <img
-                            src={imageUrl}
-                            alt="Caption"
-                            className="h-full w-full object-cover"
-                            loading="lazy"
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Actions (voting) */}
-                    <div className="px-4 pt-3">
-                      <CaptionVoteButtons
-                        captionId={caption.id}
-                        currentVote={caption.user_vote}
-                        voteCount={caption.vote_count}
-                      />
-
-                      {/* Caption text */}
-                      <div className="pb-4 pt-2">
-                        <p className="text-sm text-neutral-900">
-                          <span className="font-semibold">Caption </span>
-                          <span className="text-neutral-900/90">
-                            {caption.content}
-                          </span>
-                        </p>
-                      </div>
-                    </div>
-                  </article>
-                );
-              })
-            )}
-          </div>
+          {visibleCaptions.length === 0 ? (
+            <div className="rounded-2xl border border-neutral-200 bg-white p-8 text-center shadow-sm">
+              <p className="text-sm font-medium text-neutral-900">
+                No captions found
+              </p>
+              <p className="mt-1 text-sm text-neutral-600">
+                When people post captions, they’ll show up here.
+              </p>
+              <Link
+                href="/"
+                className="mt-5 inline-flex items-center justify-center rounded-full bg-neutral-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90"
+              >
+                Go back
+              </Link>
+            </div>
+          ) : (
+            <CaptionCarousel posts={carouselPosts} />
+          )}
         </div>
       </main>
     </>
