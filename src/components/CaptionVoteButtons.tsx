@@ -64,9 +64,6 @@ export default function CaptionVoteButtons({
 
             // Notify parent to auto-advance to next post
             onVote?.();
-
-            // Re-fetch server data so when you go next/back, it stays correct
-            router.refresh();
         } catch (e) {
             console.error("Vote insert error:", e);
             alert("Couldn't save your vote. Try again.");
