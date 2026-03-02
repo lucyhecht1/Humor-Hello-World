@@ -24,7 +24,7 @@ export default async function CaptionsPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  console.log("AUTH USER ID:", user.id);
+  console.log("AUTH USER ID:", user?.id);
   if (!user) redirect("/login");
 
   const { data: captionsData, error: captionsError } = await supabase
@@ -96,19 +96,24 @@ export default async function CaptionsPage() {
 
   // ----- votes -----
   const captionIds = captions.map((c) => c.id);
-
-  const { data: votesData } = await supabase
+  const { data: votesData, error: votesError } = await supabase
     .from("caption_votes")
-    .select("caption_id, vote_value")
-    .in("caption_id", captionIds);
+    .select("caption_id, vote_value");
+
+  if (votesError) {
+    console.error("votesError (caption_votes select):", votesError);
+  }
 
   // Check caption_votes table for votes by the authenticated user
-  const { data: userVotesData } = await supabase
+  const { data: userVotesData, error: userVotesError } = await supabase
     .from("caption_votes")
     .select("caption_id, vote_value, created_datetime_utc")
-    .in("caption_id", captionIds)
     .eq("profile_id", user.id)
     .order("created_datetime_utc", { ascending: false });
+
+  if (userVotesError) {
+    console.error("userVotesError (caption_votes select for user):", userVotesError);
+  }
 
   const voteCounts = new Map<string, number>();
   const userVoteMap = new Map<string, number>();
