@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 const ACCEPT =
   "image/jpeg,image/jpg,image/png,image/webp,image/gif,image/heic";
@@ -8,10 +9,59 @@ const ACCEPT =
 type UploadResult = { cdnUrl: string; captions: string[] };
 
 export default function UploadClient() {
+  const supabase = createSupabaseBrowserClient();
+
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [results, setResults] = useState<UploadResult[]>([]);
   const [error, setError] = useState<string | null>(null);
+
+  // localStorage key scoped to the logged-in user
+  const [storageKey, setStorageKey] = useState<string | null>(null);
+
+  // Load saved uploads for this user on mount
+  useEffect(() => {
+    (async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) return;
+
+      const key = `uploadResults:${user.id}`;
+      setStorageKey(key);
+
+      const raw = localStorage.getItem(key);
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw) as UploadResult[];
+          if (Array.isArray(parsed)) setResults(parsed);
+        } catch {
+          // ignore malformed JSON
+        }
+      }
+    })();
+  }, [supabase]);
+
+  // If user logs out, clear in-memory state (optional but avoids mixing users)
+  useEffect(() => {
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+      if (!session) {
+        setResults([]);
+        setStorageKey(null);
+      }
+    });
+    return () => sub.subscription.unsubscribe();
+  }, [supabase]);
+
+  function persist(next: UploadResult[]) {
+    if (!storageKey) return;
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(next));
+    } catch (e) {
+      console.error("localStorage persist failed:", e);
+    }
+  }
 
   async function runPipeline(f: File) {
     setBusy(true);
@@ -61,7 +111,13 @@ export default function UploadClient() {
 
       const cdnUrl = gen.cdnUrl ?? returnedCdnUrl;
       const captions = gen.captions ?? [];
-      setResults((prev) => [{ cdnUrl, captions }, ...prev]);
+
+      // Save in React state + localStorage (keep latest 25)
+      setResults((prev) => {
+        const next = [{ cdnUrl, captions }, ...prev].slice(0, 25);
+        persist(next);
+        return next;
+      });
     } catch (e: any) {
       console.error(e);
       setError(e?.message || "Something went wrong");
