@@ -59,7 +59,7 @@ export default function CaptionDownvoteButton({
             if (existingVote) {
                 const { error } = await supabase
                     .from("caption_votes")
-                    .update({ vote_value: -1 })
+                    .update({ vote_value: -1, modified_by_user_id: session.user.id, modified_datetime_utc: new Date().toISOString() })
                     .eq("caption_id", captionId)
                     .eq("profile_id", session.user.id);
 
@@ -67,12 +67,15 @@ export default function CaptionDownvoteButton({
 
                 setVote(-1);
             } else {
+                const now = new Date().toISOString();
                 const { error } = await supabase.from("caption_votes").insert({
                     caption_id: captionId,
                     profile_id: session.user.id,
                     vote_value: -1,
-                    created_datetime_utc: new Date().toISOString(),
-                    modified_datetime_utc: new Date().toISOString(),
+                    created_by_user_id: session.user.id,
+                    modified_by_user_id: session.user.id,
+                    created_datetime_utc: now,
+                    modified_datetime_utc: now,
                 });
 
                 if (error) throw error;
@@ -99,7 +102,7 @@ export default function CaptionDownvoteButton({
             aria-label={downSelected ? "Remove dislike" : "Dislike"}
             className={[
                 "group inline-flex h-14 items-center justify-center rounded-full px-6",
-                "transition active:scale-[0.98]",
+                "cursor-pointer transition active:scale-[0.98]",
                 downSelected
                     ? "bg-neutral-600 text-white"
                     : "bg-neutral-200 text-neutral-800 hover:bg-neutral-300",

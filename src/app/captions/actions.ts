@@ -22,6 +22,8 @@ export async function submitCaptionVote(captionId: string, voteType: 1 | -1) {
         caption_id: captionId,
         profile_id: user.id,
         vote_value: voteType,
+        created_by_user_id: user.id,
+        modified_by_user_id: user.id,
         created_datetime_utc: now,
         modified_datetime_utc: now,
       },

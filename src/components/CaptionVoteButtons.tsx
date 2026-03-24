@@ -85,7 +85,7 @@ export default function CaptionVoteButtons({
                 aria-label="Like"
                 className={[
                     "group inline-flex h-10 items-center justify-center rounded-full px-4",
-                    "transition active:scale-[0.98]",
+                    "cursor-pointer transition active:scale-[0.98]",
                     likeSelected
                         ? "bg-rose-600 text-white"
                         : "bg-neutral-200 text-neutral-800 hover:bg-neutral-300",
@@ -116,7 +116,7 @@ export default function CaptionVoteButtons({
                 aria-label="Dislike"
                 className={[
                     "group inline-flex h-10 items-center justify-center rounded-full px-4",
-                    "transition active:scale-[0.98]",
+                    "cursor-pointer transition active:scale-[0.98]",
                     downSelected
                         ? "bg-neutral-600 text-white"
                         : "bg-neutral-200 text-neutral-800 hover:bg-neutral-300",
