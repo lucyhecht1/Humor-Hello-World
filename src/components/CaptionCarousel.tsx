@@ -68,47 +68,24 @@ export default function CaptionCarousel({ posts, onVote }: Props) {
 
   return (
     <div className="flex flex-col items-center">
-      <div className="flex w-full max-w-xl items-stretch gap-2">
-        <article className="min-w-0 flex-1 overflow-hidden rounded-2xl border border-neutral-200/70 bg-white shadow-sm">
+      <div className="relative w-full">
+        <article className="w-full overflow-hidden rounded-2xl border border-orange-200 bg-white shadow-sm">
           {post && (
             <>
-              <div className="flex items-center justify-between px-4 py-3">
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`h-8 w-8 rounded-full bg-gradient-to-br ${post.gradient}`}
-                  />
-                  <div className="leading-tight">
-                    <div className="text-sm font-semibold text-neutral-900">
-                      {post.username}
-                    </div>
-                    <div className="text-xs text-neutral-500">
-                      {new Date(post.created_datetime_utc).toLocaleDateString(
-                        "en-US",
-                        {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        }
-                      )}
-                    </div>
-                  </div>
+              {/* Post header */}
+              <div className="flex items-center justify-between rounded-t-2xl bg-orange-500 px-4 py-2.5">
+                <div className="flex items-center gap-2">
+                  <div className={`h-6 w-6 rounded-sm bg-gradient-to-br ${post.gradient}`} />
+                  <span className="font-anton italic text-sm text-white">{post.username}</span>
+                  <span className="text-xs text-orange-200">
+                    {new Date(post.created_datetime_utc).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                  </span>
                 </div>
-                <button
-                  type="button"
-                  className="rounded-full px-2 py-1 text-xl leading-none text-neutral-400 hover:bg-neutral-50 hover:text-neutral-600"
-                  aria-label="More"
-                >
-                  …
-                </button>
               </div>
 
               {post.imageUrl && (
-                <div className="flex min-h-[280px] w-full items-center justify-center overflow-hidden bg-neutral-100 py-4">
-                  <img
-                    src={post.imageUrl}
-                    alt="Caption"
-                    className="max-h-[65vh] max-w-full object-contain"
-                  />
+                <div className="flex min-h-[280px] w-full items-center justify-center overflow-hidden bg-gray-100 py-4">
+                  <img src={post.imageUrl} alt="Caption" className="max-h-[65vh] max-w-full object-contain" />
                 </div>
               )}
 
@@ -121,11 +98,10 @@ export default function CaptionCarousel({ posts, onVote }: Props) {
                   onVote={handleVote}
                   disabled={votedIds.has(post.id)}
                 />
-
                 <div className="pb-4 pt-2">
-                  <p className="text-sm text-neutral-900">
-                    <span className="font-semibold">Caption </span>
-                    <span className="text-neutral-900/90">{post.content}</span>
+                  <p className="text-sm text-gray-900">
+                    <span className="font-bold text-orange-600">Caption: </span>
+                    {post.content}
                   </p>
                 </div>
               </div>
@@ -133,11 +109,10 @@ export default function CaptionCarousel({ posts, onVote }: Props) {
           )}
         </article>
 
-        {/* Next arrow - always clickable */}
         <button
           type="button"
           onClick={goNext}
-          className="flex shrink-0 items-center justify-center self-center rounded-full p-2 text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-600"
+          className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-[calc(100%+12px)] rounded-xl bg-orange-600 p-3 text-white shadow-md transition hover:bg-orange-700"
           aria-label="Next caption"
         >
           <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -146,15 +121,8 @@ export default function CaptionCarousel({ posts, onVote }: Props) {
         </button>
       </div>
 
-      {/* Footer: images left or "Your votes are in!" */}
-      <p className="mt-4 text-center text-sm text-neutral-600">
-        {allVoted ? (
-          "Your votes are in!"
-        ) : (
-          <>
-            {unvotedCount} {unvotedCount === 1 ? "image" : "images"} left
-          </>
-        )}
+      <p className="mt-3 text-center text-sm font-bold text-orange-800">
+        {allVoted ? "YOUR VOTES ARE IN!" : `${unvotedCount} ${unvotedCount === 1 ? "image" : "images"} left`}
       </p>
     </div>
   );

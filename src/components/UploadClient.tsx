@@ -127,45 +127,48 @@ export default function UploadClient() {
   }
 
   return (
-    <div className="w-full max-w-md">
-      <h1 className="text-2xl font-semibold">Caption This!</h1>
-      <p className="mt-1 text-black/70">
-        Upload an image. We’ll generate the captions.
-      </p>
+    <div className="w-full">
+      {/* Header window */}
+      <div className="overflow-hidden rounded-2xl border border-orange-200 shadow-sm">
+        <div className="bg-orange-500 px-4 py-2.5">
+          <span className="font-anton text-lg italic text-white">UPLOAD &amp; CAPTION</span>
+        </div>
+        <div className="bg-white p-5">
+          <p className="text-sm text-gray-600">Upload an image. AI will generate the captions.</p>
 
-      <div className="mt-6 rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm">
-        <input
-          ref={inputRef}
-          type="file"
-          accept={ACCEPT}
-          className="hidden"
-          onChange={(e) => {
-            const chosen = e.target.files?.[0] ?? null;
-            if (chosen) runPipeline(chosen);
-            e.target.value = "";
-          }}
-        />
+          <input
+            ref={inputRef}
+            type="file"
+            accept={ACCEPT}
+            className="hidden"
+            onChange={(e) => {
+              const chosen = e.target.files?.[0] ?? null;
+              if (chosen) runPipeline(chosen);
+              e.target.value = "";
+            }}
+          />
 
-        <button
-          type="button"
-          onClick={() => !busy && inputRef.current?.click()}
-          disabled={busy}
-          className="mt-4 inline-flex w-full cursor-pointer items-center justify-center rounded-full bg-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {busy ? "Uploading…" : "Upload image"}
-        </button>
+          <button
+            type="button"
+            onClick={() => !busy && inputRef.current?.click()}
+            disabled={busy}
+            className="mt-4 inline-flex w-full cursor-pointer items-center justify-center rounded-xl bg-orange-600 px-4 py-3 font-anton italic text-white transition hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {busy ? "UPLOADING…" : "UPLOAD IMAGE"}
+          </button>
 
-        {error && (
-          <div className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">
-            {error}
-          </div>
-        )}
+          {error && (
+            <div className="mt-4 border border-red-300 bg-red-50 p-3 text-sm text-red-700">
+              {error}
+            </div>
+          )}
+        </div>
       </div>
 
       {busy && (
-        <div className="relative mt-6 min-h-[280px] overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
-          <div className="absolute inset-0 z-10 flex min-h-[280px] items-center justify-center bg-neutral-200/80">
-            <div className="h-10 w-10 animate-spin rounded-full border-2 border-neutral-400 border-t-indigo-600" />
+        <div className="relative mt-4 min-h-[280px] overflow-hidden rounded-2xl border border-orange-200 bg-white shadow-sm">
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/80">
+            <div className="h-10 w-10 animate-spin border-2 border-orange-200 border-t-orange-600" />
           </div>
         </div>
       )}
@@ -173,31 +176,29 @@ export default function UploadClient() {
       {results.map((result, idx) => (
         <div
           key={`${result.cdnUrl}-${idx}`}
-          className="mt-6 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm"
+          className="mt-4 overflow-hidden rounded-2xl border border-orange-200 shadow-sm"
         >
-          <div className="aspect-square w-full overflow-hidden bg-neutral-100">
-            <img
-              src={result.cdnUrl}
-              alt="Uploaded"
-              className="h-full w-full object-cover"
-            />
+          <div className="rounded-t-2xl bg-orange-500 px-4 py-2.5">
+            <span className="font-anton italic text-white">RESULT</span>
           </div>
-          <div className="p-4">
-            <h2 className="text-sm font-semibold">Captions</h2>
-            {result.captions.length === 0 ? (
-              <p className="mt-2 text-sm text-black/70">No captions returned.</p>
-            ) : (
-              <ul className="mt-2 space-y-2">
-                {result.captions.map((c, i) => (
-                  <li
-                    key={i}
-                    className="rounded-xl bg-neutral-50 px-3 py-2 text-sm"
-                  >
-                    {c}
-                  </li>
-                ))}
-              </ul>
-            )}
+          <div className="bg-white">
+            <div className="aspect-square w-full overflow-hidden bg-gray-100">
+              <img src={result.cdnUrl} alt="Uploaded" className="h-full w-full object-cover" />
+            </div>
+            <div className="p-4">
+              <p className="font-anton italic text-orange-600">CAPTIONS:</p>
+              {result.captions.length === 0 ? (
+                <p className="mt-2 text-sm text-gray-500">No captions returned.</p>
+              ) : (
+                <ul className="mt-2 space-y-2">
+                  {result.captions.map((c, i) => (
+                    <li key={i} className="border border-gray-200 bg-gray-50 px-3 py-2 text-sm">
+                      {c}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </div>
         </div>
       ))}

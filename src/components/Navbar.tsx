@@ -3,36 +3,33 @@ import AuthButton from "@/components/AuthButton";
 
 export default function Navbar() {
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 flex h-16 items-center justify-center border-b border-neutral-200 bg-white/80 backdrop-blur-sm shadow-sm">
-      <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-6">
-        <div className="flex items-center gap-4">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-orange-600 shadow-md">
+      <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-5">
+        <div className="flex items-center gap-6">
           <Link
             href="/"
-            className="text-sm font-semibold text-neutral-900 transition hover:text-indigo-600"
+            className="font-anton text-2xl italic text-yellow-300 leading-none transition hover:text-yellow-200"
+            style={{ textShadow: "1px 1px 0 rgba(0,0,0,0.3)" }}
           >
-            Home
+            LLMFAO
           </Link>
-          <Link
-            href="/list"
-            className="text-sm font-semibold text-neutral-900 transition hover:text-indigo-600"
-          >
-            Dorms
-          </Link>
-          <Link
-            href="/captions"
-            className="text-sm font-semibold text-neutral-900 transition hover:text-indigo-600"
-          >
-            Captions
-          </Link>
-          <Link
-            href="/upload"
-            className="text-sm font-semibold text-neutral-900 transition hover:text-indigo-600"
-          >
-            Upload
-          </Link>
+          <nav className="flex items-center gap-1">
+            {[
+              { href: "/captions", label: "Rate Captions" },
+              { href: "/upload", label: "Upload" },
+            ].map(({ href, label }) => (
+              <Link
+                key={href}
+                href={href}
+                className="rounded-lg px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-orange-500"
+              >
+                {label}
+              </Link>
+            ))}
+          </nav>
         </div>
         <AuthButton />
       </div>
-    </nav>
+    </header>
   );
 }
