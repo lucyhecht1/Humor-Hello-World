@@ -72,7 +72,7 @@ export default async function Home() {
         <div className="mx-auto max-w-5xl">
 
           {/* Hero */}
-          <div className="mb-8 text-center">
+          <div className="mb-8 mt-6 text-center">
             <h1
               className="font-anton text-8xl italic text-orange-600 leading-none sm:text-9xl"
               style={{ textShadow: "3px 3px 0 rgba(0,0,0,0.1)" }}
