@@ -60,37 +60,48 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Step 4: Generate captions
-  const capResp = await fetch(`${API_BASE}/pipeline/generate-captions`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${session.access_token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ imageId }),
-  });
+  // Step 4: Generate captions — call 5 times in parallel for variety
+  const capResults = await Promise.all(
+    Array.from({ length: 5 }, () =>
+      fetch(`${API_BASE}/pipeline/generate-captions`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ imageId }),
+      })
+    )
+  );
 
-  const capText = await capResp.text();
-  let cap: any;
-  try {
-    cap = JSON.parse(capText);
-  } catch {
-    cap = { raw: capText };
-  }
-
-  if (!capResp.ok) {
+  // Use the first failed response as the error, if any
+  const firstBad = capResults.find((r) => !r.ok);
+  if (firstBad) {
+    const details = await firstBad.text().catch(() => "");
     return NextResponse.json(
-      { error: "Generate captions failed", details: cap, imageId },
-      { status: capResp.status }
+      { error: "Generate captions failed", details, imageId },
+      { status: firstBad.status }
     );
   }
 
-  const array = Array.isArray(cap) ? cap : [];
-  const captions = array
-    .map(extractCaptionText)
-    .filter((t): t is string => !!t && t.trim().length > 0);
+  const allCaptions: string[] = [];
+  for (const r of capResults) {
+    const text = await r.text();
+    let parsed: any;
+    try { parsed = JSON.parse(text); } catch { continue; }
+    const arr = Array.isArray(parsed) ? parsed : [];
+    arr.map(extractCaptionText).filter((t): t is string => !!t && t.trim().length > 0).forEach((t) => allCaptions.push(t));
+  }
+
+  // Deduplicate while preserving order
+  const seen = new Set<string>();
+  const captions = allCaptions.filter((t) => {
+    if (seen.has(t)) return false;
+    seen.add(t);
+    return true;
+  });
 
   // IMPORTANT: Do NOT write to Supabase tables here.
   // Upload results stay on /upload only.
-  return NextResponse.json({ imageId, cdnUrl, captions, raw: array });
+  return NextResponse.json({ imageId, cdnUrl, captions });
 }

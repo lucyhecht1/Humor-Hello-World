@@ -72,11 +72,12 @@ export default function AuthButton() {
 
   async function signIn() {
     setSigningIn(true);
-    const next = encodeURIComponent(pathname ?? "/captions");
+    const next = pathname ?? "/captions";
+    document.cookie = `auth_redirect_to=${encodeURIComponent(next)}; path=/; max-age=300; SameSite=Lax`;
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=${next}`,
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
       },
     });
   }

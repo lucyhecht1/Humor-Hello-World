@@ -37,6 +37,7 @@ function LoginContent() {
 
   async function signInWithGoogle() {
     setSigningIn(true);
+    document.cookie = `auth_redirect_to=${encodeURIComponent(redirectTo)}; path=/; max-age=300; SameSite=Lax`;
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
