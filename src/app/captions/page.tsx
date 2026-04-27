@@ -66,7 +66,8 @@ export default async function CaptionsPage({
 
   const supabase = await createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login?redirectTo=/captions");
+  const deckParam = activeDeckIndex !== null ? `?deck=${activeDeckIndex}` : "";
+  if (!user) redirect(`/login?redirectTo=${encodeURIComponent(`/captions${deckParam}`)}`);
 
   const { data: captionsData, error: captionsError } = await supabase
     .from("captions")
